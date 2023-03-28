@@ -22,7 +22,6 @@ def test_clova(API_KEYS,content):
   rescode = response.status_code
   if (rescode == 200):
     result = json.loads(response.text)
-    
   else:
     result = "Error :"+response.text
     
@@ -34,9 +33,19 @@ def test_clova(API_KEYS,content):
 def index(request):
   template = loader.get_template('index.html')
   content = request.GET.get('diary_txt')
-  
   context = {}
-  if(content):
+  
+  if content == None:
+    context = {}
+  elif len(content) > 1000:
+    context = {
+      "txt_data" : content,
+      "sentiment" : str(len(content)) + " chars in your diary. Please enter no more than 1000 characters",
+      "pos" : "Null",
+      "neu" : "Null",
+      "neg" : "Null",
+    }
+  else:
     with open('./diary/API_KEYS.json', 'r') as f:
       API_KEYS = json.load(f)
   
@@ -49,4 +58,7 @@ def index(request):
       "neu" : result['document']['confidence']['neutral'],
       "neg" : result['document']['confidence']['negative'],
     }
+ 
+    
+  
   return HttpResponse(template.render(context, request))
