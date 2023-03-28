@@ -40,7 +40,7 @@ def index(request):
   elif len(content) > 1000:
     context = {
       "txt_data" : content,
-      "sentiment" : str(len(content)) + " chars in your diary. Please enter no more than 1000 characters",
+      "sentiment" : str(len(content)) + " characters in your diary. Please enter no more than 1000 characters",
       "pos" : "Null",
       "neu" : "Null",
       "neg" : "Null",
