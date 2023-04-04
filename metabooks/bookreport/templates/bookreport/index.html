@@ -3,7 +3,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>BookReport</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css"
@@ -11,23 +11,16 @@
   </head>
   <body>
     <div class="container">
-      <h1>Analysis</h1>
+      <h1>Img Generate</h1>
       
       <form method = "GET">
-      <textarea name="diary_txt" id="diary_txt" rows="25" cols="50" ></textarea>
+      <textarea name="bookrepot_txt" id="bookreport_txt" rows="25" cols="50" ></textarea>
       <input type ="submit">
       <form>
     </div>
-    <div class="container">
-      <h1>입력 문장</h1>
-      <pre>
-        <h5>{{txt_data}}</h5>
-      </pre>
-      <h1>결과</h1>
-      <h3>sentiment : {{sentiment}}</h2>
-      <h6>positive : {{pos}}</h4>
-      <h6>neutral : {{neu}}</h4>
-      <h6>negative : {{neg}}</h4>
+    <div>
+      <h3>생성이미지</h3>
+      <!-- 이미지 받아오는 부분 추가 예정 -->
     </div>
     
   </body>
