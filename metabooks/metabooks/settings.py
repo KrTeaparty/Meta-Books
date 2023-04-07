@@ -119,7 +119,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATIC_ROOT = join(BASE_DIR,'staticfiles')
+STATIC_ROOT = join(BASE_DIR,'static')
 STATIC_DIRS = (
   join(BASE_DIR,'node_modules'),
 )
