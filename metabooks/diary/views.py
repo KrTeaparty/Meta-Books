@@ -31,7 +31,7 @@ def test_clova(API_KEYS,content):
 
 
 def index(request):
-  template = loader.get_template('index.html')
+  template = loader.get_template('diary/index.html')
   content = request.GET.get('diary_txt')
   context = {}
   

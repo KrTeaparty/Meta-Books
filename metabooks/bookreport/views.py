@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.template import loader
 import requests
 import json
 import openai
@@ -105,6 +106,7 @@ class Book_report():
 
 
 
+
 def test_openai(API_KEYS: dict, content: str):
   openai.api_key = API_KEYS['openai_api_key']
   conn, cur = connect_db()
@@ -202,12 +204,19 @@ def test_karlo(API_KEYS: dict, content: str):
 
   img = api.string_to_image(base64_string = img_str, mode = 'RGBA')
 
+
+  return img
   # <수정 예정> 저장 경로 결정 필요
-  img.save('./Features/test.png')
+  #img.save('./Features/test.png')
 
 def insert_content(UID, contents):
   conn, cur = connect_db()
   sql = 
 
 def index(request):
-  return HttpResponse("Bookreport")  
+  template = loader.get_template('bookreport/index.html')
+  
+  context={}
+  
+  
+  return HttpResponse(template.render(context,request))  
