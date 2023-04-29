@@ -1,5 +1,9 @@
+from django.template import loader
 from django.shortcuts import render
 from django.http import HttpResponse
+from .models import Book_Report
+#from PIL import Image
+#import io
 import requests
 import json
 import openai
@@ -21,7 +25,7 @@ class Book_report():
 
     def test_openai(self):
         print('===== test_openai 시작 =====')
-        openai.api_key = API_KEYS['openai_api_key']
+        openai.api_key = self.API_KEYS['openai_api_key']
         model = "gpt-3.5-turbo"
 
         print('\t 1단계 시작')
@@ -137,6 +141,11 @@ class Book_report():
         cur.close()
         conn.close()
 
+    def get_image(self):
+        api = Karlo(service_key = self.API_KEYS['kakao_rest_api_key'])
+        image = api.string_to_image(base64_string = self.image, mode = 'RGBA')
+        return image
+
 '''
 사용법
 book = Book_report(API_KEYS)
@@ -172,5 +181,29 @@ cur.close()
 conn.close()
 '''
 
+
+
 def index(request):
-  return HttpResponse("Bookreport")  
+    template = loader.get_template('bookreport/index.html')
+    content = request.GET.get('bookreport_txt')
+    context = {}
+
+    if content == None:
+        context = {}
+    else:
+        with open('./bookreport/API_KEYS.json', 'r') as f:
+            API_KEYS = json.load(f)
+
+        br = Book_Report()
+        book = Book_report(API_KEYS)
+        book.insert_content(content)
+        book.test_openai()
+        book.test_karlo()
+        #book.insert_to_db()
+
+        context = {
+            "gen_img": book.image
+        }
+
+    return HttpResponse(template.render(context))
+    #return HttpResponse("Bookreport")  
