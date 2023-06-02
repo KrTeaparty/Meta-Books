@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from django.template import loader
 from django.http import HttpResponse
+from .models import Diary
 import requests
 import json
+import statistics
+import datetime as dt
 
 
 def test_clova(API_KEYS,content):
@@ -33,32 +36,91 @@ def test_clova(API_KEYS,content):
 def index(request):
   template = loader.get_template('diary/index.html')
   content = request.GET.get('diary_txt')
+  long_content = []
   context = {}
+  page = 1
   
   if content == None:
     context = {}
   elif len(content) > 1000:
+    with open('./diary/API_KEYS.json', 'r') as f:
+      API_KEYS = json.load(f)
+  
     context = {
-      "txt_data" : content,
-      "sentiment" : str(len(content)) + " characters in your diary. Please enter no more than 1000 characters",
-      "pos" : "Null",
-      "neu" : "Null",
-      "neg" : "Null",
+        "txt_data" : content,
+        "sentiment" : "Null",
+        "pos" : "Null",
+        "neu" : "Null",
+        "neg" : "Null",
+      }
+    page = len(content) // 1000
+    prev_idx = 0
+    idx = 1000
+    while True:
+      idx = content[prev_idx:idx].rfind('.')
+      if idx == -1:
+        break
+      long_content.append(content[prev_idx:idx])
+      prev_idx = idx
+
+    sentiment_list = []
+    pos_list = []
+    neu_list = []
+    neg_list= []
+
+    for i in range(0, page):
+      result = test_clova(API_KEYS, long_content[i])
+      sentiment_list.append(result['document']['sentiment'])
+      pos_list.append(result['document']['confidence']['positive'])
+      neu_list.append(result['document']['confidence']['neutral'])
+      neg_list.append(result['document']['confidence']['negative'])
+
+    sentiment = statistics.mode(sentiment_list)
+    pos = statistics.mean(pos_list)
+    neu = statistics.mean(neu_list)
+    neg = statistics.mean(neg_list)
+
+    context = {
+      "txt_data": content,
+      "sentiment": sentiment,
+      "pos" : pos,
+      "neu" : neu,
+      "neg" : neg,
     }
+
+    diary = Diary(content=context['txt_data'], senti=context['sentiment'], 
+                  pos=context['pos'], neu=context['neu'], neg=context['neg'], 
+                  date=dt.datetime.now().strftime('%Y-%m-%d %H:%M'))
+    diary.save()
+
   else:
     with open('./diary/API_KEYS.json', 'r') as f:
       API_KEYS = json.load(f)
   
-    result = test_clova(API_KEYS,content)
+    context = {
+        "txt_data" : content,
+        "sentiment" : "Null",
+        "pos" : "Null",
+        "neu" : "Null",
+        "neg" : "Null",
+      }
+    result = test_clova(API_KEYS, content)
+    sentiment = result['document']['sentiment']
+    pos = result['document']['confidence']['positive']
+    neu = result['document']['confidence']['neutral']
+    neg = result['document']['confidence']['negative']
 
     context = {
       "txt_data": content,
-      "sentiment": result['document']['sentiment'],
-      "pos" : result['document']['confidence']['positive'],
-      "neu" : result['document']['confidence']['neutral'],
-      "neg" : result['document']['confidence']['negative'],
+      "sentiment": sentiment,
+      "pos" : pos,
+      "neu" : neu,
+      "neg" : neg,
     }
- 
-    
+
+    diary = Diary(content=context['txt_data'], senti=context['sentiment'], 
+                  pos=context['pos'], neu=context['neu'], neg=context['neg'],
+                  date=dt.datetime.now().strftime('%Y-%m-%d %H:%M'))
+    diary.save()
   
   return HttpResponse(template.render(context, request))

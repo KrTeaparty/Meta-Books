@@ -1,5 +1,5 @@
 from django.template import loader
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Book_Report
 #from PIL import Image
@@ -18,7 +18,7 @@ class Book_report():
         self.content = ''
         self.keywords = ''
         self.image = None
-        self.date = dt.datetime.now().strftime('%Y%m%d')
+        self.date = dt.datetime.now().strftime('%Y-%m-%d %H:%M')
 
     def insert_content(self, content):
         self.content = content
@@ -62,11 +62,12 @@ class Book_report():
         ans = response['choices'][0]['message']['content']
 
         # 3. 번역
+        '''
         print('\t 3단계 시작')
         messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant who is good at translating."
+                "content": "You are an assistant who is good at creating prompts for image creation."
             },
             {
                 "role": "assistant",
@@ -84,9 +85,9 @@ class Book_report():
             messages = messages
         )
         ans = response['choices'][0]['message']['content']
-
+        '''
         # 4. 키워드 추출
-        print('\t 4단계 시작')
+        print('\t 3단계 시작')
         messages = [
             {
                 "role": "system",
@@ -101,7 +102,7 @@ class Book_report():
         messages.append(
             {
                 "role": "user", 
-                "content": "Condense up to 7 outward description to focus on nouns and adjectives separated by ','. Do not answer by each keyword."
+                "content": "Condense up to 7 outward description to focus on nouns and adjectives separated by ',' according to the form 'word1, word2, ...'"
             }
         )
         # ChatGPT API 호출하기
@@ -146,64 +147,71 @@ class Book_report():
         image = api.string_to_image(base64_string = self.image, mode = 'RGBA')
         return image
 
-'''
-사용법
-book = Book_report(API_KEYS)
-
-test_gpt_contents = """
-독후감 내용
-"""
-
-book.insert_content(test_gpt_contents)
-book.test_openai()
-book.test_karlo()
-book.insert_to_db()
-'''
-
-'''
-불러오는 법
-def get_image(img_str):
-    api = Karlo(service_key = API_KEYS['kakao_rest_api_key'])
-    image = api.string_to_image(base64_string = img_str, mode = 'RGBA')
-    image.save('./Features/test.png')
-
-conn = sqlite3.connect('./metabooks/db.sqlite3')
-cur = conn.cursor()
-
-sql = """SELECT * from book_report"""
-cur.execute(sql)
-record = cur.fetchall()
-
-for r in record:
-    get_image(r[3])
-
-cur.close()
-conn.close()
-'''
-
-
-
 def index(request):
-    template = loader.get_template('bookreport/index.html')
-    content = request.GET.get('bookreport_txt')
-    context = {}
+    #template = loader.get_template('bookreport/index.html')
+    #content = request.GET.get('bookreport_txt')
+    #context = {}
+    return render(request, 'bookreport/index.html')
+    #return HttpResponse(template.render(context))
+    #return HttpResponse("Bookreport")
 
-    if content == None:
-        context = {}
-    else:
+def display_img(request):
+    if request.method == 'POST':
+        template = loader.get_template('bookreport/display_img.html')
         with open('./bookreport/API_KEYS.json', 'r') as f:
             API_KEYS = json.load(f)
 
-        br = Book_Report()
-        book = Book_report(API_KEYS)
-        book.insert_content(content)
-        book.test_openai()
-        book.test_karlo()
-        #book.insert_to_db()
+            book = Book_report(API_KEYS)
+            book.insert_content(request.POST['bookreport_txt'])
+            book.test_openai()
+            book.test_karlo()
+            #book.insert_to_db()
 
-        context = {
+            context = {
+                "cls": book,
+                "gen_img": book.image
+            }
+    return HttpResponse(template.render(context))
+    #return redirect('bookreport/display_img', context)
+
+def saving(request):
+    if request.method == 'POST':
+        template = loader.get_template('bookreport/db_list.html')
+        '''
+        temp = {
+            'content' : request.GET.get('content'),
+            'keywords' : request.GET.get('keywords'),
+            'date' : request.GET.get('date'),
+            'img' : request.GET.get('image')
+        }
+        '''
+        temp = {
+            'content' : request.POST['content'],
+            'keywords' : request.POST['keywords'],
+            'date' : request.POST['date'],
+            'img' : request.POST['image']
+        }
+            
+        print(temp)
+        br = Book_Report(content=temp['content'], keywords=temp['keywords'], image=temp['img'], date=temp['date'])
+        br.save()
+        context = {'contextlist': Book_Report.objects.all()}
+    return HttpResponse(template.render(context))
+
+def regen_img(request):
+    if request.method == 'POST':
+        template=loader.get_template('bookreport/regen_img.html')
+        with open('./bookreport/API_KEYS.json', 'r') as f:
+            API_KEYS = json.load(f)
+
+            book = Book_report(API_KEYS)
+            book.insert_content(request.POST['content'])
+            book.keywords = request.POST['keywords']
+            book.test_karlo()
+
+        context ={
+            "cls": book,
             "gen_img": book.image
         }
 
-    return HttpResponse(template.render(context))
-    #return HttpResponse("Bookreport")  
+        return HttpResponse(template.render(context))

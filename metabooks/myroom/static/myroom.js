@@ -46,7 +46,7 @@ class App {
   // hdr 파일 교체 예정
   _setupBackground() {
     new RGBELoader().load(
-      "/metabooks/myroom/static/src/neon_photostudio_4k.hdr",
+      "/metabooks/myroom/static/src/AdobeStock_244602043.hdr",
       (texture) => {
         texture.mapping = THREE.EquirectangularReflectionMapping;
         this._scene.background = texture;
