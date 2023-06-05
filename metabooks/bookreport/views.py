@@ -18,13 +18,13 @@ class Book_report():
         self.content = ''
         self.keywords = ''
         self.image = None
+        self.des_content = ''
         self.date = dt.datetime.now().strftime('%Y-%m-%d %H:%M')
 
     def insert_content(self, content):
         self.content = content
 
-    def test_openai(self):
-        print('===== test_openai 시작 =====')
+    def describe(self):
         openai.api_key = self.API_KEYS['openai_api_key']
         model = "gpt-3.5-turbo"
 
@@ -60,9 +60,10 @@ class Book_report():
             messages=messages
         )
         ans = response['choices'][0]['message']['content']
+        self.des_content = ans
 
-        # 3. 번역
-        '''
+    def get_keywords(self):
+        model = "gpt-3.5-turbo"
         print('\t 3단계 시작')
         messages = [
             {
@@ -71,31 +72,7 @@ class Book_report():
             },
             {
                 "role": "assistant",
-                "content": ans
-            }
-        ]
-        messages.append(
-            {
-                "role": "user",
-                "content": "영어로 번역해주세요."
-            }
-        )
-        response = openai.ChatCompletion.create(
-            model = model,
-            messages = messages
-        )
-        ans = response['choices'][0]['message']['content']
-        '''
-        # 4. 키워드 추출
-        print('\t 3단계 시작')
-        messages = [
-            {
-                "role": "system",
-                "content": "You are an assistant who is good at creating prompts for image creation."
-            },
-            {
-                "role": "assistant",
-                "content": ans
+                "content": self.des_content
             }
         ]
         # 사용자 메시지 추가
@@ -113,6 +90,11 @@ class Book_report():
         # <수정 예정> DB에 추출한 키워드 저장 필요
         ans = response['choices'][0]['message']['content']
         self.keywords = ans
+
+    def test_openai(self):
+        print('===== test_openai 시작 =====')
+        self.describe()
+        self.get_keywords()
         print('\t 전체 단계 수행 완료: ', self.keywords)
 
     def test_karlo(self):
@@ -164,7 +146,13 @@ def display_img(request):
             book = Book_report(API_KEYS)
             book.insert_content(request.POST['bookreport_txt'])
             book.test_openai()
-            book.test_karlo()
+            for i in range(5):
+                try:
+                    book.test_karlo()
+                    break
+                except:
+                    book.get_keywords()
+                    return redirect('http://127.0.0.1:8000/bookreport') # 에러 발생시 이동할 URL
             #book.insert_to_db()
 
             context = {
