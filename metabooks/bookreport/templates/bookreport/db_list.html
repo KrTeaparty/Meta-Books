@@ -1,0 +1,34 @@
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>BookReport</title>
+        <link
+        rel="stylesheet"
+        href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css"
+        />
+    </head>
+    <body>
+        <div>
+            <h3>DB 내용</h3>
+            <table>
+                <thread class="dark">
+                    <tr>
+                        <th scope="col">keywords</th>
+                        <th scope="col">date</th>
+                    </tr>
+                </thread>
+                <tbody>
+                    {% for context in contextlist%}
+                    <tr>
+                        <td>{{context.keywords}}</td>
+                        <td>{{context.date}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                
+            </table>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,37 @@
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>BookReport</title>
+        <link
+        rel="stylesheet"
+        href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css"
+        />
+    </head>
+    <body>
+        <div>
+            <h3>생성이미지</h3>
+            <!-- 이미지 받아오는 부분 추가 예정 -->
+            <form action='/bookreport/db_list/' method="POST">
+            {% csrf_token %}
+                <input type="hidden" id="content" name="content" value="{{cls.content}}">
+                <input type="hidden" id="keywords" name="keywords" value="{{cls.keywords}}">
+                <input type="hidden" id="date" name="date" value="{{cls.date}}">
+                <img src="data:gen_img/png;base64,{{cls.image}}" id="image" name="image">
+                <input type="hidden" value="data:gen_img/png;base64,{{cls.image}}" id="image" name="image">
+                <input type ="submit">
+            </form>
+
+            <form action='/bookreport/regen_img/' method="POST">
+                {% csrf_token %}
+                    <input type="hidden" id="content" name="content" value="{{cls.content}}">
+                    <input type="text" id="keywords" name="keywords" value="{{cls.keywords}}">
+                    <input type="hidden" id="date" name="date" value="{{cls.date}}">
+                    <img src="data:gen_img/png;base64,{{cls.image}}" id="image" name="image">
+                    <input type="hidden" value="data:gen_img/png;base64,{{cls.image}}" id="image" name="image">
+                    <input type ="submit">Regenerate
+            </form>
+        </div>
+    </body>
+</html>

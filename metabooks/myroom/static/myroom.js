@@ -54,6 +54,16 @@ class App {
       this._scene.background = texture;
       this._scene.environment = texture;
     });
+=======
+    new RGBELoader().load(
+      "/metabooks/myroom/static/src/AdobeStock_244602043.hdr",
+      (texture) => {
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        this._scene.background = texture;
+        this._scene.environment = texture;
+      }
+    );
+>>>>>>> 9cd3fd7fae9f2ca3cb3e52710a529dfd332254d7
   }
 
   _setupLight() {

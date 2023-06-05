@@ -13,15 +13,11 @@
     <div class="container">
       <h1>Img Generate</h1>
       
-      <form method = "GET">
-        <textarea name="bookrepot_txt" id="bookreport_txt" rows="25" cols="50" ></textarea>
+      <form action="display_img/" method="POST">
+      {% csrf_token %}
+        <textarea name="bookreport_txt" id="bookreport_txt" rows="25" cols="50" ></textarea>
         <input type ="submit">
       <form>
     </div>
-    <div>
-      <h3>생성이미지</h3>
-      <!-- 이미지 받아오는 부분 추가 예정 -->
-    </div>
-    
   </body>
 </html>
