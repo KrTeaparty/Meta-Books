@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "OrbitControls";
 import { RGBELoader } from "RGBELoader";
+import { GLTFLoader } from "GLTFLoader";
 
 class App {
   constructor() {
@@ -25,6 +26,7 @@ class App {
     this._setupModel();
     this._setupControls();
     this._setupBackground();
+    this._setupEvents();
 
     window.onresize = this.resize.bind(this);
     this.resize();
@@ -45,31 +47,74 @@ class App {
 
   // hdr 파일 교체 예정
   _setupBackground() {
-    new RGBELoader().load(
-      "/metabooks/myroom/static/src/neon_photostudio_4k.hdr",
-      (texture) => {
-        texture.mapping = THREE.EquirectangularReflectionMapping;
-        this._scene.background = texture;
-        this._scene.environment = texture;
-      }
-    );
+    const rgbeLoader = new RGBELoader();
+    const url = "../../static/src/library.hdr";
+    rgbeLoader.load(url, (texture) => {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      this._scene.background = texture;
+      this._scene.environment = texture;
+    });
   }
+
   _setupLight() {
-    // const color = 0xffffff;
-    // const intensity = 1;
-    // const light = new THREE.DirectionalLight(color, intensity);
-    // light.position.set(-1, 2, 4);
-    // this._scene.add(light);
+    const color = 0xffffff;
+    const intensity = 1;
+    const light = new THREE.DirectionalLight(color, intensity);
+    light.position.set(-1, 2, 4);
+    this._scene.add(light);
   }
 
   _setupModel() {
-    const geometry = new THREE.TorusKnotGeometry(1, 0.3, 256, 64, 2, 3);
-    const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+    //const geometry = new THREE.BoxGeometry(2, 2, 2);
+    //const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
 
-    const cube = new THREE.Mesh(geometry, material);
+    //const cube = new THREE.Mesh(geometry, material);
 
-    this._scene.add(cube);
-    this._cube = cube;
+    //this._scene.add(cube);
+    //this._cube = cube;
+    this._createBook();
+  }
+
+  _createBook() {
+    const gltfLoader = new GLTFLoader();
+    const url = "../../static/src/book.glb";
+    gltfLoader.load(url, (glb) => {
+      glb.scene.scale.set(7, 7, 7);
+      const root = glb.scene;
+      this._scene.add(root);
+    });
+  }
+
+  _setupEvents() {
+    this._raycaster = new THREE.Raycaster();
+    this._raycaster._clickedPosition = new THREE.Vector2();
+    this._raycaster._selectedMesh = null;
+
+    window.addEventListener("click", (event) => {
+      this._raycaster._clickedPosition.x =
+        (event.clientX / window.innerWidth) * 2 - 1;
+      this._raycaster._clickedPosition.y =
+        -(event.clientY / window.innerHeight) * 2 + 1;
+      this._raycaster.setFromCamera(
+        this._raycaster._clickedPosition,
+        this._camera
+      );
+      const found = this._raycaster.intersectObjects(this._scene.children);
+
+      if (found.length > 0) {
+        console.log("Success");
+        window.open("popup", "a", "width=1300, height=900, left=410, top=190");
+      } else {
+        console.log("Not found");
+      }
+    });
+
+    window.onresize = this.resize.bind(this);
+
+    this.resize();
+
+    this._clock = new THREE.Clock();
+    requestAnimationFrame(this.render.bind(this));
   }
 
   resize() {
