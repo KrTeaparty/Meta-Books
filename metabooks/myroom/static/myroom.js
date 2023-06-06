@@ -53,7 +53,8 @@ class App {
       texture.mapping = THREE.EquirectangularReflectionMapping;
       this._scene.background = texture;
       this._scene.environment = texture;
-    })
+    });
+  }
 
   _setupLight() {
     //const color = 0xffffff;
@@ -61,7 +62,7 @@ class App {
     //const light = new THREE.DirectionalLight(color, intensity);
     //light.position.set(-1, 2, 4);
     //this._scene.add(light);
-    }
+  }
 
   _setupModel() {
     //const geometry = new THREE.BoxGeometry(2, 2, 2);
